@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, DateTime
 from sqlalchemy import MetaData, cast, Date, func
 from sqlalchemy import select, delete, insert, desc
+from datetime import date
 
 metadata = MetaData()
 
@@ -61,19 +62,27 @@ sql_earlierprograms = select( # XXX Lägg till tidsgräns på tidigare
 
 earlierprograms = s.execute(sql_earlierprograms).all() # Lägg in i listan
 
-st.write("Logga träning för", finduser.name)
 
-duration = st.slider("Träningstid i minuter", value=prev_duration, min_value=5, max_value=60)
+
+
+st.header("Träningslogg för " + finduser.name)
+if prevtraining:
+    st.write("Senast", prevtraining.ts.date())
+else:
+    st.write("Första loggningen!")
 
 program = st.selectbox(
     "Träningsprogram",
     ["Stretch", "Paolo Nybörjare 1", "Paolo Nybörjare 2", "Paolo Medel", "Paolo Utmanare", "Löp 5k", "Löp 10k"],
+    label_visibility="collapsed",
     index=None,
     placeholder=prev_program,
     accept_new_options=True
 )
+st.write(program)
+duration = st.slider("Träningstid i minuter", value=prev_duration, min_value=5, max_value=60)
 
-if st.button("Logga träning"):
+if st.button("Logga träning", disabled=(not program)):
 
     sql_delete_today = delete(training
     ).where(training.c.user == id
@@ -89,3 +98,5 @@ if st.button("Logga träning"):
 
     s.commit()
     st.balloons()
+
+st.write("Obs. Ny loggning på samma dag skriver över den föregående.")
