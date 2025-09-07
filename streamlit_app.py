@@ -82,7 +82,7 @@ program = st.selectbox(
 st.write(program)
 duration = st.slider("Träningstid i minuter", value=prev_duration, min_value=5, max_value=60)
 
-if st.button("Logga träning", disabled=(not program)):
+if st.button("Logga träning"):
 
     sql_delete_today = delete(training
     ).where(training.c.user == id
