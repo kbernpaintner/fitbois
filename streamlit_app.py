@@ -79,7 +79,7 @@ program = st.selectbox(
     placeholder=prev_program,
     accept_new_options=True
 )
-st.write(program)
+
 duration = st.slider("Träningstid i minuter", value=prev_duration, min_value=5, max_value=60)
 
 if st.button("Logga träning"):
