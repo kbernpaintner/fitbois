@@ -33,7 +33,7 @@ s = st.connection('fitbois').session
 sql_finduser = select(user).where(user.c.id == id)
 finduser = s.execute(sql_finduser).first()
 
-if not len(finduser):
+if not finduser:
     st.write("Fel id")
     st.stop()
 
