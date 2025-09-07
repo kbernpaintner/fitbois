@@ -42,7 +42,7 @@ if not finduser:
 sql_prevtraining = select(training).where(training.c.user == id).order_by(desc(training.c.ts)).limit(1)
 prevtraining = s.execute(sql_prevtraining).first()
 
-prev_program = "Välj ett träningsprogram eller skriv in ett eget"
+prev_program = "Välj ett program eller ange eget"
 prev_duration = 15
 
 if prevtraining:
