@@ -69,7 +69,7 @@ earlierprograms = s.execute(sql_earlierprograms).all() # Lägg in i listan
 
 program = st.selectbox(
     "Träningsprogram",
-    ["Stretch", "Paolo Nybörjare 1", "Paolo Nybörjare 2", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"],
+    ["Stretch", "Paolo Nybörjare", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"],
     label_visibility="collapsed",
     index=None,
     placeholder=prev_program,
