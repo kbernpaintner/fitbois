@@ -101,3 +101,4 @@ if st.button("Logga träning", disabled=disable_save):
     st.balloons()
 
 st.write("Obs. Vid flera loggningar på samma dag sparas bara den sista.")
+st.write("Träningsprogram finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)")
