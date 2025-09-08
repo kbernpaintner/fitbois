@@ -37,17 +37,22 @@ if not finduser:
     st.write("Fel id")
     st.stop()
 
-# Användare accepterad!
+# Användare godkänd
 
-sql_prevtraining = select(training).where(training.c.user == id).order_by(desc(training.c.ts)).limit(1)
-prevtraining = s.execute(sql_prevtraining).first()
+st.header("Träningslogg för " + finduser.name)
 
-prev_program = "Välj ett program eller ange eget"
+sql_prevlog = select(training).where(training.c.user == id).order_by(desc(training.c.ts)).limit(1)
+prevlog = s.execute(sql_prevlog).first()
+
+prev_program = "Välj ett program eller skriv in eget"
 prev_duration = 15
 
-if prevtraining:
-    prev_program = prevtraining.program
-    prev_duration = prevtraining.duration
+if prevlog:
+    prev_program = prevlog.program
+    prev_duration = prevlog.duration
+    st.write("Senast", prevlog.ts.date())
+else:
+    st.write("Första loggningen!")
 
 sql_earlierprograms = select( # XXX Lägg till tidsgräns på tidigare
     training.c.program,
@@ -62,27 +67,25 @@ sql_earlierprograms = select( # XXX Lägg till tidsgräns på tidigare
 
 earlierprograms = s.execute(sql_earlierprograms).all() # Lägg in i listan
 
-
-
-
-st.header("Träningslogg för " + finduser.name)
-if prevtraining:
-    st.write("Senast", prevtraining.ts.date())
-else:
-    st.write("Första loggningen!")
-
 program = st.selectbox(
     "Träningsprogram",
-    ["Stretch", "Paolo Nybörjare 1", "Paolo Nybörjare 2", "Paolo Medel", "Paolo Utmanare", "Löp 5k", "Löp 10k"],
+    ["Stretch", "Paolo Nybörjare 1", "Paolo Nybörjare 2", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"],
     label_visibility="collapsed",
     index=None,
     placeholder=prev_program,
     accept_new_options=True
 )
 
-duration = st.slider("Träningstid i minuter", value=prev_duration, min_value=5, max_value=60)
+disable_save = program is None and prevlog is None
+program = program if program else prev_program
+duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, max_value=60)
 
-if st.button("Logga träning"):
+# st.write("XXX Valt program:", program)
+# st.write("XXX Prev log:", prevlog)
+# st.write("XXX Disable:", disable_save)
+# st.write("XXX Program:", program)
+
+if st.button("Logga träning", disabled=disable_save):
 
     sql_delete_today = delete(training
     ).where(training.c.user == id
@@ -90,8 +93,6 @@ if st.button("Logga träning"):
     )
 
     sql_insert_today = insert(training).values(user=id, program=program, duration=duration)
-   
-    print(sql_delete_today)
 
     s.execute(sql_delete_today)
     s.execute(sql_insert_today)
@@ -99,4 +100,4 @@ if st.button("Logga träning"):
     s.commit()
     st.balloons()
 
-st.write("Obs. Ny loggning på samma dag skriver över den föregående.")
+st.write("Obs. Vid flera loggningar på samma dag sparas bara den sista.")
