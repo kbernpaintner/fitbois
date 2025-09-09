@@ -59,19 +59,21 @@ else:
 sql_earlierprograms = select( # XXX Lägg till tidsgräns på tidigare
     training.c.program,
     func.max(training.c.ts).label('max_date')
-).where(
-    training.c.user == id
-).group_by(
-    training.c.program
-).order_by(
-    desc('max_date')
+).where(training.c.user == id
+).where(func.datediff(func.curdate(), training.c.ts) < 30
+).group_by(training.c.program
+).order_by(desc('max_date')
 )
 
-earlierprograms = s.execute(sql_earlierprograms).all() # Lägg in i listan
+earlierprograms = s.execute(sql_earlierprograms).all()
+p = [program for program, ts in earlierprograms]
+
+standardprograms = ["Stretch", "Paolo Nybörjare", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"]
+p.extend(sp for sp in standardprograms if sp not in p)
 
 program = st.selectbox(
     "Träningsprogram",
-    ["Stretch", "Paolo Nybörjare", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"],
+    p,
     label_visibility="collapsed",
     index=None,
     placeholder=prev_program,
