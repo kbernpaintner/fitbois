@@ -103,8 +103,13 @@ if st.button("Logga träning", disabled=disable_save):
     st.balloons()
     st.rerun()
 
-st.write("Obs. Vid flera loggningar på samma dag sparas bara den sista.")
-st.write("Träningsprogram finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)")
+st.write("""
+Obs. Vid flera loggningar på samma dag sparas bara den sista.
+Träningsprogram finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)
+""")
+
+
+st.header("Mina senaste pass")
 
 sql_mylatest = select(
     training
@@ -114,12 +119,11 @@ sql_mylatest = select(
     desc(training.c.ts)
 ).limit(10)
 
-st.header("Mina senaste pass")
-
 df = pd.DataFrame(s.execute(sql_mylatest).all())
 df['day'] = df.ts.dt.date
+df['min'] = df.duration
 # df = df.set_index('ts')
-st.dataframe(df[['day', 'program', 'duration']], hide_index=True)
+st.dataframe(df[['day', 'min', 'program']], hide_index=True)
 
 
 st.header("Andras senaste pass")
@@ -138,4 +142,5 @@ sql_otherslatest = select(
 otherlatest = s.execute(sql_otherslatest).all()
 df = pd.DataFrame(otherlatest)
 df['day'] = df.ts.dt.date
-st.dataframe(df[['day', 'name', 'program', 'duration']], hide_index=True)
+df['min'] = df.duration
+st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
