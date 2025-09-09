@@ -114,14 +114,15 @@ sql_mylatest = select(
     desc(training.c.ts)
 ).limit(10)
 
-st.header("Mina senaste träningspass")
+st.header("Mina senaste pass")
 
 df = pd.DataFrame(s.execute(sql_mylatest).all())
 df['day'] = df.ts.dt.date
 # df = df.set_index('ts')
 st.dataframe(df[['day', 'program', 'duration']], hide_index=True)
 
-st.header("Andras senaste träningspass")
+
+st.header("Andras senaste pass")
 
 sql_otherslatest = select(
     training,
