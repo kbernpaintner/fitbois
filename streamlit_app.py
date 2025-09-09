@@ -5,7 +5,6 @@ from sqlalchemy import MetaData, cast, Date, func
 from sqlalchemy import select, delete, insert, desc, join
 from datetime import date
 import pandas as pd
-import matplotlib.pyplot as plt
 
 
 metadata = MetaData()
