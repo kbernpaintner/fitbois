@@ -41,7 +41,7 @@ if not finduser:
 
 # Användare godkänd
 
-st.header("Träningslogg för " + finduser.name)
+st.header(finduser.name + " träningslogg")
 
 sql_prevlog = select(training).where(training.c.user == id).order_by(desc(training.c.ts)).limit(1)
 prevlog = s.execute(sql_prevlog).first()
