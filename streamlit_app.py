@@ -2,8 +2,11 @@ import streamlit as st
 from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, DateTime
 from sqlalchemy import MetaData, cast, Date, func
-from sqlalchemy import select, delete, insert, desc
+from sqlalchemy import select, delete, insert, desc, join
 from datetime import date
+import pandas as pd
+import matplotlib.pyplot as plt
+
 
 metadata = MetaData()
 
@@ -99,6 +102,40 @@ if st.button("Logga träning", disabled=disable_save):
 
     s.commit()
     st.balloons()
+    st.rerun()
 
 st.write("Obs. Vid flera loggningar på samma dag sparas bara den sista.")
 st.write("Träningsprogram finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)")
+
+sql_mylatest = select(
+    training
+).where(
+    training.c.user == id
+).order_by(
+    desc(training.c.ts)
+).limit(10)
+
+st.header("Mina senaste träningspass")
+
+df = pd.DataFrame(s.execute(sql_mylatest).all())
+df['day'] = df.ts.dt.date
+# df = df.set_index('ts')
+st.dataframe(df[['day', 'program', 'duration']], hide_index=True)
+
+st.header("Andras senaste träningspass")
+
+sql_otherslatest = select(
+    training,
+    user
+).select_from(
+    join(training, user, training.c.user == user.c.id)
+).where(
+    user.c.id != id
+).order_by(
+    desc(training.c.ts)
+).limit(20)
+
+otherlatest = s.execute(sql_otherslatest).all()
+df = pd.DataFrame(otherlatest)
+df['day'] = df.ts.dt.date
+st.dataframe(df[['day', 'name', 'program', 'duration']], hide_index=True)
