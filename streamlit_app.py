@@ -30,7 +30,7 @@ if not "id" in st.query_params:
     st.stop()
 
 id = st.query_params.id
-s = st.connection('fitbois').session
+s = st.connection('fitbois', pool_recycle=3600).session
 
 sql_finduser = select(user).where(user.c.id == id)
 finduser = s.execute(sql_finduser).first()
