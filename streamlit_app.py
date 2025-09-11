@@ -121,8 +121,9 @@ sql_mylatest = select(
     desc(training.c.ts)
 ).limit(10)
 
-df = pd.DataFrame(s.execute(sql_mylatest).all())
-if df:
+mylatest = s.execute(sql_mylatest).all()
+if mylatest:
+    df = pd.DataFrame(mylatest)
     df['day'] = df.ts.dt.date
     df['min'] = df.duration
     # df = df.set_index('ts')
