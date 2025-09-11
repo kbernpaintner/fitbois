@@ -122,10 +122,11 @@ sql_mylatest = select(
 ).limit(10)
 
 df = pd.DataFrame(s.execute(sql_mylatest).all())
-df['day'] = df.ts.dt.date
-df['min'] = df.duration
-# df = df.set_index('ts')
-st.dataframe(df[['day', 'min', 'program']], hide_index=True)
+if df:
+    df['day'] = df.ts.dt.date
+    df['min'] = df.duration
+    # df = df.set_index('ts')
+    st.dataframe(df[['day', 'min', 'program']], hide_index=True)
 
 
 st.header("Andras senaste pass")
