@@ -3,7 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy import Table, Column, Integer, String, DateTime
 from sqlalchemy import MetaData, cast, Date, func
 from sqlalchemy import select, delete, insert, desc, join
-from datetime import date
+from datetime import date, datetime, timedelta
 import pandas as pd
 
 
@@ -148,3 +148,12 @@ df = pd.DataFrame(otherlatest)
 df['day'] = df.ts.dt.date
 df['min'] = df.duration
 st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
+
+start_date = datetime.now().date() - timedelta(days=2)
+dates = [start_date - timedelta(days=i) for i in range(7)]
+
+st.selectbox(
+    "Träningsdatum",
+    ['Idag', 'Igår'] + dates,
+    label_visibility="collapsed"
+)
