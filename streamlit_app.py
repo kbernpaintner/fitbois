@@ -93,7 +93,7 @@ dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
 weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
 alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
     
-with st.container():
+with st.container(horizontal=True):
     if st.button("Logga träning", disabled=disable_save):
         sql_delete_today = delete(training
         ).where(training.c.user == id
