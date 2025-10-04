@@ -149,11 +149,12 @@ df['day'] = df.ts.dt.date
 df['min'] = df.duration
 st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
 
-start_date = datetime.now().date() - timedelta(days=2)
-dates = [start_date - timedelta(days=i) for i in range(7)]
+dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
+weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
 
 st.selectbox(
     "Träningsdatum",
-    ['Idag', 'Igår'] + dates,
+    ['Idag', 'Igår'] + alternativ[2:],
     label_visibility="collapsed"
 )
