@@ -89,9 +89,11 @@ duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, 
 # st.write("XXX Disable:", disable_save)
 # st.write("XXX Program:", program)
 
-col1, col2 = st.columns(2)
-
-with col1:
+dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
+weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
+    
+with st.container():
     if st.button("Logga träning", disabled=disable_save):
         sql_delete_today = delete(training
         ).where(training.c.user == id
@@ -107,11 +109,6 @@ with col1:
         st.balloons()
         st.rerun()
 
-with col2:
-    dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
-    weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
-    alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
-    
     st.selectbox(
         "Funkar inte än:",
         ['Idag', 'Igår'] + alternativ[2:],
