@@ -89,25 +89,38 @@ duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, 
 # st.write("XXX Disable:", disable_save)
 # st.write("XXX Program:", program)
 
-if st.button("Logga träning", disabled=disable_save):
+col1, col2 = st.columns(2)
 
-    sql_delete_today = delete(training
-    ).where(training.c.user == id
-    ).where(func.date(training.c.ts) >= func.curdate()
+with col1:
+    if st.button("Logga träning", disabled=disable_save):
+        sql_delete_today = delete(training
+        ).where(training.c.user == id
+        ).where(func.date(training.c.ts) >= func.curdate()
+        )
+    
+        sql_insert_today = insert(training).values(user=id, program=program, duration=duration)
+    
+        s.execute(sql_delete_today)
+        s.execute(sql_insert_today)
+    
+        s.commit()
+        st.balloons()
+        st.rerun()
+
+with col2:
+    dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
+    weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+    alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
+    
+    st.selectbox(
+        "Funkar inte än:",
+        ['Idag', 'Igår'] + alternativ[2:],
+#       label_visibility="collapsed"
     )
-
-    sql_insert_today = insert(training).values(user=id, program=program, duration=duration)
-
-    s.execute(sql_delete_today)
-    s.execute(sql_insert_today)
-
-    s.commit()
-    st.balloons()
-    st.rerun()
 
 st.write("""
 Obs. Vid flera loggningar på samma dag sparas bara den sista.
-Träningsprogram finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)
+Träningsförslag finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)
 """)
 
 
@@ -149,12 +162,3 @@ df['day'] = df.ts.dt.date
 df['min'] = df.duration
 st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
 
-dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
-weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
-alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
-
-st.selectbox(
-    "Träningsdatum",
-    ['Idag', 'Igår'] + alternativ[2:],
-    label_visibility="collapsed"
-)
