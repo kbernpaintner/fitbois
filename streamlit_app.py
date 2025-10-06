@@ -7,6 +7,19 @@ from datetime import date, datetime, timedelta
 import pandas as pd
 
 
+def logtraining(dbsession, id, program, duration, day):
+        sql_delete_today = delete(training
+        ).where(training.c.user == id
+        ).where(func.date(training.c.ts) == day
+        )
+    
+        sql_insert_today = insert(training).values(user=id, program=program, duration=duration, ts=day)
+    
+        dbsession.execute(sql_delete_today)
+        dbsession.execute(sql_insert_today)
+        dbsession.commit()
+
+
 metadata = MetaData()
 
 user = Table(
@@ -26,20 +39,33 @@ training = Table(
 )
 
 if not "id" in st.query_params:
-    st.write("Inget id")
+    st.write("URL ska ha formen https://fitbois.streamlit.app/?id=XXXX där XXXX är ditt personliga id.")
     st.stop()
+
+# Id uppgivet, finns i databasen?
 
 id = st.query_params.id
 s = st.connection('fitbois', pool_recycle=3600).session
 
 sql_finduser = select(user).where(user.c.id == id)
-finduser = s.execute(sql_finduser).first()
+
+try:
+    finduser = s.execute(sql_finduser).first()
+except Exception as e:
+    st.write("Skicka nedanstående felbeskrivning till Klabbe och försök igen, nu eller om ett tag.")
+    st.write(e)
 
 if not finduser:
     st.write("Fel id")
     st.stop()
 
-# Användare godkänd
+# ID godkänt
+
+dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
+weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
+alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
+alternativ[0] = 'Idag'
+alternativ[1] = 'Igår'
 
 st.header("Träningslogg " + finduser.name)
 
@@ -88,36 +114,22 @@ duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, 
 # st.write("XXX Prev log:", prevlog)
 # st.write("XXX Disable:", disable_save)
 # st.write("XXX Program:", program)
-
-dates = [datetime.now().date() - timedelta(days=i) for i in range(7)]
-weekday = ['Måndag', 'Tisdag', 'Onsdag', 'Torsdag', 'Fredag', 'Lördag', 'Söndag']
-alternativ = [weekday[date.weekday()] + " " + date.isoformat() for date in dates]
     
 with st.container(horizontal=True):
     if st.button("Logga träning", disabled=disable_save):
-        sql_delete_today = delete(training
-        ).where(training.c.user == id
-        ).where(func.date(training.c.ts) >= func.curdate()
-        )
-    
-        sql_insert_today = insert(training).values(user=id, program=program, duration=duration)
-    
-        s.execute(sql_delete_today)
-        s.execute(sql_insert_today)
-    
-        s.commit()
-        st.balloons()
+        logtraining(s, id, program, duration, dates[alternativ.index(st.session_state.trainingday)])
+        st.session_state.saved = True
         st.rerun()
 
-    st.selectbox(
-        "Funkar inte än:",
-        ['Idag', 'Igår'] + alternativ[2:],
-#       label_visibility="collapsed"
+    st.session_state.trainingday = st.selectbox(
+        "Träningsdag",
+        alternativ,
+        label_visibility="collapsed"
     )
 
 st.write("""
 Obs. Vid flera loggningar på samma dag sparas bara den sista.
-Träningsförslag finns [HÄR](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn)
+Träningsförslag finns [här](https://drive.google.com/drive/folders/1WbRYW0EofaMUEiLtxZXHIXEjozyYuLDn).
 """)
 
 
@@ -159,3 +171,6 @@ df['day'] = df.ts.dt.date
 df['min'] = df.duration
 st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
 
+if "saved" in st.session_state:
+    del st.session_state.saved
+    st.balloons()
