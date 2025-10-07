@@ -39,13 +39,18 @@ training = Table(
 )
 
 if not "id" in st.query_params:
-    st.write("URL ska ha formen https://fitbois.streamlit.app/?id=XXXX där XXXX är ditt personliga id.")
+    st.write("URL ska ha följande form, där XXXX är ditt personliga id:"
+    st.write("https://fitbois.streamlit.app/?id=XXXX")
     st.stop()
 
 # Id uppgivet, finns i databasen?
 
 id = st.query_params.id
-s = st.connection('fitbois', pool_recycle=3600).session
+s = st.connection(
+    'fitbois',
+#   pool_recycle=3600,
+    pool_pre_ping=True
+    ).session
 
 sql_finduser = select(user).where(user.c.id == id)
 
@@ -82,7 +87,7 @@ if prevlog:
 else:
     st.write("Första loggningen!")
 
-sql_earlierprograms = select( # XXX Lägg till tidsgräns på tidigare
+sql_earlierprograms = select(
     training.c.program,
     func.max(training.c.ts).label('max_date')
 ).where(training.c.user == id
@@ -109,11 +114,6 @@ program = st.selectbox(
 disable_save = program is None and prevlog is None
 program = program if program else prev_program
 duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, max_value=60)
-
-# st.write("XXX Valt program:", program)
-# st.write("XXX Prev log:", prevlog)
-# st.write("XXX Disable:", disable_save)
-# st.write("XXX Program:", program)
     
 with st.container(horizontal=True):
     if st.button("Logga träning", disabled=disable_save):
