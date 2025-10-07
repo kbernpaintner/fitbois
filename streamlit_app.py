@@ -39,7 +39,7 @@ training = Table(
 )
 
 if not "id" in st.query_params:
-    st.write("URL ska ha följande form, där XXXX är ditt personliga id:"
+    st.write("URL ska ha följande form, där XXXX är ditt personliga id:")
     st.write("https://fitbois.streamlit.app/?id=XXXX")
     st.stop()
 
