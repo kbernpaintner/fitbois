@@ -113,7 +113,7 @@ program = st.selectbox(
 
 disable_save = program is None and prevlog is None
 program = program if program else prev_program
-duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, max_value=60)
+duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, max_value=90)
     
 with st.container(horizontal=True):
     if st.button("Logga träning", disabled=disable_save):
