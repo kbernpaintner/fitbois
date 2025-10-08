@@ -141,7 +141,7 @@ sql_mylatest = select(
     training.c.user == id
 ).order_by(
     desc(training.c.ts)
-).limit(10)
+).limit(5)
 
 mylatest = s.execute(sql_mylatest).all()
 if mylatest:
