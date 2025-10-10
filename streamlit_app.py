@@ -167,24 +167,82 @@ if mylatest:
     st.dataframe(df[['day', 'min', 'program']], hide_index=True)
 
 
-st.header("Andras senaste pass")
+st.header("Senaste 20 aktiviteterna")
 
-sql_otherslatest = select(
+sql_latestpass = select(
     training,
     user
 ).select_from(
     join(training, user, training.c.user == user.c.id)
 ).where(
-    user.c.id != id
+    func.datediff(func.curdate(), training.c.ts) < 15
 ).order_by(
     desc(training.c.ts)
-).limit(20)
+)
 
-otherlatest = s.execute(sql_otherslatest).all()
-df = pd.DataFrame(otherlatest)
+latestpass = s.execute(sql_latestpass).all()
+df = pd.DataFrame(latestpass)
 df['day'] = df.ts.dt.date
 df['min'] = df.duration
-st.dataframe(df[['day', 'name', 'min', 'program']], hide_index=True)
+
+st.dataframe(df[['day', 'name', 'min', 'program']].head(20), hide_index=True)
+
+
+
+df = df[['day', 'name', 'min']].rename(columns={'day': 'Datum', 'name': 'Namn', 'min': 'Minuter'})
+
+# Step 1: Convert Datum to datetime
+df['Datum'] = pd.to_datetime(df['Datum'])
+
+# Step 2: Calculate sum, mean, and count of Minuter for each Namn before padding
+stats = df.groupby('Namn').agg({
+    'Minuter': ['sum', 'mean'],
+    'Datum': 'count'
+}).reset_index()
+stats.columns = ['Namn', 'Total_Minutes', 'Average_Minutes', 'Original_Count']
+stats['Average_Minutes'] = stats['Average_Minutes'].round().astype(int)
+
+# Step 3: Create all name-date combinations for padding
+unique_names = df['Namn'].unique()
+date_range = pd.date_range(end=df['Datum'].min(), start=df['Datum'].max(), freq='-1D')
+all_combinations = pd.MultiIndex.from_product([date_range, unique_names], names=['Datum', 'Namn'])
+complete_df = pd.DataFrame(index=all_combinations).reset_index()
+
+# Step 4: Merge with original DataFrame and fill missing Minuter with 0
+complete_df = complete_df.merge(df[['Datum', 'Namn', 'Minuter']], on=['Datum', 'Namn'], how='left')
+complete_df['Minuter'] = complete_df['Minuter'].fillna(0).astype(int)
+
+# Step 5: Group by Namn to get Minuter lists
+grouped = complete_df.groupby('Namn')['Minuter'].agg(list).reset_index(name='Minuter_List')
+
+# Step 6: Merge with stats (sum, mean, and count)
+grouped = grouped.merge(stats, on='Namn', how='left')
+
+# Step 7: Fill NaN in Total_Minutes, Average_Minutes, and Original_Count with 0 (for edge cases)
+grouped['Total_Minutes'] = grouped['Total_Minutes'].fillna(0).astype(int)
+grouped['Average_Minutes'] = grouped['Average_Minutes'].fillna(0)
+grouped['Original_Count'] = grouped['Original_Count'].fillna(0).astype(int)
+
+# Step 8: Convert to desired list format
+output = grouped.apply(lambda x: [x['Namn'], x['Original_Count'], x['Total_Minutes'], x['Average_Minutes'], x['Minuter_List']], axis=1).tolist()
+
+st.header("Statistik senaste 14 dagarna")
+
+st.dataframe(
+    output,
+    column_config={
+        1: "Namn",
+        2: "Pass",
+        3: "∑ Min",
+        4: "x̄ Min",
+        5: st.column_config.BarChartColumn(
+            label="Pass och längd, nyaste först",
+            y_min=0,
+            y_max=int(df['Minuter'].max())
+        ),
+    }
+)
+
 
 if "saved" in st.session_state:
     del st.session_state.saved
