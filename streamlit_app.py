@@ -167,7 +167,7 @@ if mylatest:
     st.dataframe(df[['day', 'min', 'program']], hide_index=True)
 
 
-st.header("Senaste 20")
+st.header("Allas senaste 20")
 
 sql_latestpass = select(
     training,
