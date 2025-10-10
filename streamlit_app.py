@@ -236,7 +236,7 @@ st.dataframe(
         3: "∑ Min",
         4: "x̄ Min",
         5: st.column_config.BarChartColumn(
-            label="Pass och längd, nyaste först",
+            label="Pass och längd, nyaste till vänster",
             y_min=0,
             y_max=int(df['Minuter'].max())
         ),
