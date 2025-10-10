@@ -222,6 +222,7 @@ grouped = grouped.merge(stats, on='Namn', how='left')
 grouped['Total_Minutes'] = grouped['Total_Minutes'].fillna(0).astype(int)
 grouped['Average_Minutes'] = grouped['Average_Minutes'].fillna(0)
 grouped['Original_Count'] = grouped['Original_Count'].fillna(0).astype(int)
+grouped = grouped.sort_values(by='Original_Count', ascending=False).reset_index(drop=True)
 
 # Step 8: Convert to desired list format
 output = grouped.apply(lambda x: [x['Namn'], x['Original_Count'], x['Total_Minutes'], x['Average_Minutes'], x['Minuter_List']], axis=1).tolist()
