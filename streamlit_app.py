@@ -167,7 +167,7 @@ if mylatest:
     st.dataframe(df[['day', 'min', 'program']], hide_index=True)
 
 
-st.header("Senaste 20 aktiviteterna")
+st.header("Senaste 20")
 
 sql_latestpass = select(
     training,
@@ -226,7 +226,7 @@ grouped['Original_Count'] = grouped['Original_Count'].fillna(0).astype(int)
 # Step 8: Convert to desired list format
 output = grouped.apply(lambda x: [x['Namn'], x['Original_Count'], x['Total_Minutes'], x['Average_Minutes'], x['Minuter_List']], axis=1).tolist()
 
-st.header("Statistik senaste 14 dagarna")
+st.header("Senaste 14 dagarna")
 
 st.dataframe(
     output,
