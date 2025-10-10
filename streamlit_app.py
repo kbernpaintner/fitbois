@@ -148,7 +148,7 @@ Träningsförslag finns [här](https://drive.google.com/drive/folders/1WbRYW0Eof
 """)
 
 
-st.header("Mina senaste pass")
+st.header("Mina 5 senaste pass")
 
 sql_mylatest = select(
     training
