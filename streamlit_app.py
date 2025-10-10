@@ -8,16 +8,16 @@ import pandas as pd
 
 
 def logtraining(dbsession, id, program, duration, day):
-        sql_delete_today = delete(training
-        ).where(training.c.user == id
-        ).where(func.date(training.c.ts) == day
-        )
-    
-        sql_insert_today = insert(training).values(user=id, program=program, duration=duration, ts=day)
-    
-        dbsession.execute(sql_delete_today)
-        dbsession.execute(sql_insert_today)
-        dbsession.commit()
+    sql_delete_today = delete(training
+    ).where(training.c.user == id
+    ).where(func.date(training.c.ts) == day
+    )
+
+    sql_insert_today = insert(training).values(user=id, program=program, duration=duration, ts=day)
+
+    dbsession.execute(sql_delete_today)
+    dbsession.execute(sql_insert_today)
+    dbsession.commit()
 
 
 metadata = MetaData()
@@ -43,7 +43,7 @@ if not "id" in st.query_params:
     st.write("https://fitbois.streamlit.app/?id=XXXX")
     st.stop()
 
-# Id uppgivet, finns i databasen?
+# Id uppgivet, kolla mot databasen?
 
 id = st.query_params.id
 s = st.connection(
@@ -102,30 +102,45 @@ p = [program for program, ts in earlierprograms]
 standardprograms = ["Stretch", "Paolo Nybörjare", "Paolo Medel", "Paolo Utmanare", "Löpning 3k", "Löpning 5k", "Löpning 10k"]
 p.extend(sp for sp in standardprograms if sp not in p)
 
-program = st.selectbox(
-    "Träningsprogram",
-    p,
-    label_visibility="collapsed",
-    index=None,
-    placeholder=prev_program,
-    accept_new_options=True
-)
+### Formulär
 
-disable_save = program is None and prevlog is None
-program = program if program else prev_program
-duration = st.slider("Träningstid, minuter", value=prev_duration, min_value=5, max_value=120)
-    
-with st.container(horizontal=True):
-    if st.button("Logga träning", disabled=disable_save):
-        logtraining(s, id, program, duration, dates[alternativ.index(st.session_state.trainingday)])
-        st.session_state.saved = True
-        st.rerun()
+with st.form("Loggformulär"):
 
-    st.session_state.trainingday = st.selectbox(
-        "Träningsdag",
-        alternativ,
-        label_visibility="collapsed"
+    program = st.selectbox(
+        "Träningsprogram",
+        p,
+        label_visibility="collapsed",
+        index=None,
+        placeholder=prev_program,
+        accept_new_options=True
     )
+
+    duration = st.slider(
+        "Träningstid, minuter",
+        value=prev_duration,
+        min_value=5,
+        max_value=120
+    )
+
+    disable_save = program is None and prevlog is None
+    program = program if program else prev_program
+        
+    with st.container(horizontal=True):
+        submitted = st.form_submit_button(
+            "Logga träning",
+            disabled=disable_save
+        )
+
+        trainingday = st.selectbox(
+            "Träningsdag",
+            alternativ,
+            label_visibility="collapsed"
+        )
+
+        if submitted:
+            logtraining(s, id, program, duration, dates[alternativ.index(trainingday)])
+            st.session_state.saved = True
+            st.rerun()
 
 st.write("""
 Obs. Vid flera loggningar på samma dag sparas bara den sista.
